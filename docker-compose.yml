@@ -1,0 +1,39 @@
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:16
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    restart: unless-stopped
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    volumes:
+      - static:/django_static
+      - media:/app/media
+
+  gateway:
+    restart: unless-stopped
+    build: ./gateway/
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - static:/static
+      - media:/media
