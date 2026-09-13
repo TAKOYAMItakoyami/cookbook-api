@@ -136,3 +136,7 @@ dmypy.json
 
 static/
 media/
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
