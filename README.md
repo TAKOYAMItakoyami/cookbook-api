@@ -1,5 +1,15 @@
 # Cookbook API
 
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)
+![DRF](https://img.shields.io/badge/DRF-3.17.1-A30000?style=for-the-badge&logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-1.22-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
 REST API сервиса рецептов: пользователи публикуют рецепты, ищут их по тегам и ингредиентам,
 добавляют блюда в избранное и в список покупок, скачивают список покупок файлом и подписываются
 на других авторов.
@@ -20,7 +30,21 @@ HTTP-клиентом.
 - короткие ссылки на рецепты;
 - панель администратора Django.
 
-## Технологический стек
+## База данных
+
+Проект поддерживает две СУБД — выбор делается переменной `DB_ENGINE`
+в файле `.env`, код приложения от этого не зависит:
+
+| Режим | СУБД | `DB_ENGINE` |
+| ----- | ---- | ----------- |
+| Локальная разработка | SQLite | `django.db.backends.sqlite3` |
+| Docker / прод | PostgreSQL 16 | `django.db.backends.postgresql` |
+
+При `DB_ENGINE=django.db.backends.sqlite3` база создаётся в файле `db.sqlite3`
+в корне проекта; при `DB_ENGINE=django.db.backends.postgresql` подключение идёт
+к контейнеру `db` по параметрам `POSTGRES_USER` / `POSTGRES_PASSWORD` / `DB_HOST` / `DB_PORT`.
+
+## Использованные технологии
 
 | Технология | Версия | Назначение |
 | ---------- | ------ | ---------- |
@@ -37,6 +61,21 @@ HTTP-клиентом.
 | [Gunicorn](https://gunicorn.org/) | 25.3.0 | WSGI-сервер |
 | [Nginx](https://nginx.org/) | 1.22.1 | Отдача статики и проксирование запросов |
 | [Docker](https://www.docker.com/) / [Docker Compose](https://docs.docker.com/compose/) | — | Контейнеризация и запуск сервисов |
+
+## Проверка кода
+
+Проект настроен на flake8 (конфигурация в `setup.cfg`), isort (профиль `black`,
+длина строки 79) и black (длина строки 79, `pyproject.toml`). Линтеры и форматтеры
+включены в `requirements.txt`:
+
+```bash
+flake8 .
+isort --check-only --diff .
+black --check .
+```
+
+CI (GitHub Actions) запускает flake8, isort и black при каждом push и pull request
+в ветки `main` и `develop` (`.github/workflows/ci.yml`).
 
 ## Структура проекта
 
@@ -80,13 +119,21 @@ cookbook-api/
 │   ├── Dockerfile            # Образ Nginx
 │   └── nginx.conf            # Конфигурация Nginx
 │
+├── .dockerignore             # Исключения для сборки Docker-образа
 ├── .env.example              # Шаблон переменных окружения
+├── .gitattributes            # Правила нормализации переводов строк
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # CI: flake8, isort, black, тесты, сборка Docker
+├── .gitignore                # Исключения для Git
 ├── docker-compose.yml        # Сервисы db, backend, gateway
 ├── Dockerfile                # Образ приложения
 ├── entrypoint.sh             # Точка входа контейнера приложения
 ├── manage.py                 # Управляющий скрипт Django
 ├── openapi.yml               # Спецификация API в формате OpenAPI 3.0
+├── pyproject.toml            # Конфигурация black
 ├── requirements.txt          # Зависимости Python
+├── setup.cfg                 # Конфигурация flake8 и isort
 └── LICENSE                   # Лицензия MIT
 ```
 
